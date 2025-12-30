@@ -4,29 +4,278 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width" />
   <title>馬年くじびき</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;700&family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --ink: #1a0f0a;
+      --gold: #c59c48;
+      --crimson: #b71c1c;
+      --paper: #f4ede2;
+      --jade: #1f8f66;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    * { box-sizing: border-box; }
     body {
-      font-family: system-ui;
+      margin: 0;
+      font-family: "Zen Maru Gothic", "Noto Serif JP", serif;
+      background: radial-gradient(circle at 20% 20%, #fff5e6 0, #f4e5c7 40%, #f0d6a5 80%);
+      color: var(--ink);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+    body::before, body::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-size: 200px 200px;
+      pointer-events: none;
+      opacity: 0.1;
+      mix-blend-mode: multiply;
+    }
+    body::before {
+      background-image:
+        radial-gradient(#d1a94d 1px, transparent 1px),
+        radial-gradient(#d1a94d 1px, transparent 1px);
+      background-position: 0 0, 100px 100px;
+    }
+    body::after {
+      background-image: repeating-linear-gradient(45deg, transparent, transparent 18px, rgba(0,0,0,0.02) 18px, rgba(0,0,0,0.02) 36px);
+    }
+    .page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 40px 20px 60px;
+      position: relative;
+    }
+    header {
       text-align: center;
-      background: #f7f3eb;
+      margin-bottom: 30px;
+      position: relative;
+      padding: 20px 0 10px;
+    }
+    header h1 {
+      font-family: "Noto Serif JP", serif;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      margin: 0;
+      font-size: 2.4rem;
+      color: var(--ink);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    header .tagline {
+      margin-top: 8px;
+      color: var(--crimson);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .kadomatsu {
+      position: absolute;
+      top: 0;
+      width: 120px;
+      height: 220px;
+      filter: drop-shadow(var(--shadow));
+    }
+    .kadomatsu.left { left: -10px; transform: rotate(-2deg); }
+    .kadomatsu.right { right: -10px; transform: scaleX(-1) rotate(-2deg); }
+    .kadomatsu svg { width: 100%; height: 100%; }
+    .card {
+      background: var(--paper);
+      border: 4px double var(--gold);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .stamp {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 70px;
+      height: 70px;
+      border: 2px solid var(--crimson);
+      color: var(--crimson);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      transform: rotate(-12deg);
+      background: rgba(255,255,255,0.8);
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 20px;
+      align-items: center;
+      padding: 10px 10px 20px;
+    }
+    .hero-text {
+      text-align: left;
+      line-height: 1.7;
+    }
+    .hero-text h2 {
+      margin: 0 0 10px;
+      font-size: 1.6rem;
+      color: var(--crimson);
+      letter-spacing: 0.1em;
+    }
+    .hero-text p { margin: 6px 0; }
+    .ticket {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.85);
+      border: 1px dashed var(--gold);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .ticket small { font-weight: 400; color: #5c4b3b; }
+    .horse-track {
+      background: linear-gradient(135deg, rgba(197,156,72,0.25), rgba(197,156,72,0.45));
+      border-radius: 14px;
+      padding: 18px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .track-line {
+      position: absolute;
+      bottom: 32px;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: repeating-linear-gradient(90deg, #8c6239 0, #8c6239 14px, transparent 14px, transparent 24px);
+      opacity: 0.5;
     }
     #horse {
-      font-size: 80px;
+      font-size: 88px;
       transition: transform 3s ease-in;
+      display: inline-block;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
     .run {
-      transform: translateX(300px);
+      transform: translateX(360px);
+    }
+    .buttons {
+      margin-top: 16px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    #run {
+      background: linear-gradient(120deg, var(--crimson), #e04848);
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 1rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    #run:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+    #run:not(:disabled):hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(0,0,0,0.18);
+    }
+    #result {
+      margin-top: 18px;
+      font-size: 1.2rem;
+      line-height: 1.8;
+      min-height: 80px;
+    }
+    #result a {
+      color: var(--crimson);
+      font-weight: 700;
+    }
+    .footer-note {
+      margin-top: 20px;
+      text-align: right;
+      color: #705c49;
+      font-size: 0.9rem;
+    }
+    @media (max-width: 800px) {
+      .hero { grid-template-columns: 1fr; }
+      header h1 { font-size: 2rem; }
+      .kadomatsu { display: none; }
+      .run { transform: translateX(240px); }
     }
   </style>
 </head>
 <body>
-  <h1>🐎 馬年くじびき</h1>
+  <div class="page">
+    <header>
+      <div class="kadomatsu left" aria-hidden="true">
+        <svg viewBox="0 0 120 220">
+          <g>
+            <ellipse cx="60" cy="200" rx="50" ry="18" fill="#1f8f66"/>
+            <rect x="20" y="90" width="20" height="110" fill="#2f9a72" rx="8"/>
+            <rect x="50" y="70" width="20" height="130" fill="#34a06e" rx="8"/>
+            <rect x="80" y="100" width="20" height="100" fill="#2a8c63" rx="8"/>
+            <ellipse cx="30" cy="90" rx="10" ry="20" fill="#f1d28f" stroke="#c59c48" stroke-width="3"/>
+            <ellipse cx="60" cy="70" rx="10" ry="20" fill="#f1d28f" stroke="#c59c48" stroke-width="3"/>
+            <ellipse cx="90" cy="100" rx="10" ry="20" fill="#f1d28f" stroke="#c59c48" stroke-width="3"/>
+            <circle cx="32" cy="128" r="6" fill="#f8c55b"/>
+            <circle cx="60" cy="110" r="6" fill="#f8c55b"/>
+            <circle cx="88" cy="140" r="6" fill="#f8c55b"/>
+          </g>
+        </svg>
+      </div>
+      <div class="kadomatsu right" aria-hidden="true">
+        <svg viewBox="0 0 120 220">
+          <g>
+            <ellipse cx="60" cy="200" rx="50" ry="18" fill="#1f8f66"/>
+            <rect x="20" y="90" width="20" height="110" fill="#2f9a72" rx="8"/>
+            <rect x="50" y="70" width="20" height="130" fill="#34a06e" rx="8"/>
+            <rect x="80" y="100" width="20" height="100" fill="#2a8c63" rx="8"/>
+            <ellipse cx="30" cy="90" rx="10" ry="20" fill="#f1d28f" stroke="#c59c48" stroke-width="3"/>
+            <ellipse cx="60" cy="70" rx="10" ry="20" fill="#f1d28f" stroke="#c59c48" stroke-width="3"/>
+            <ellipse cx="90" cy="100" rx="10" ry="20" fill="#f1d28f" stroke="#c59c48" stroke-width="3"/>
+            <circle cx="32" cy="128" r="6" fill="#f8c55b"/>
+            <circle cx="60" cy="110" r="6" fill="#f8c55b"/>
+            <circle cx="88" cy="140" r="6" fill="#f8c55b"/>
+          </g>
+        </svg>
+      </div>
+      <h1>🐎 馬年おみくじ</h1>
+      <div class="tagline">走り初めの運試し</div>
+    </header>
 
-  <div id="horse">🐎</div>
-
-  <button id="run">馬を走らせる</button>
-
-  <div id="result"></div>
+    <div class="card">
+      <div class="stamp">辰巳午未</div>
+      <div class="hero">
+        <div class="hero-text">
+          <h2>願いを乗せて、駆け出す。</h2>
+          <p>門松と紅白の彩りでお迎えする午年のおみくじ。あらかじめ授かった「年賀状」で、あなただけの結果を解封します。</p>
+          <p class="ticket">🎟 <small>ticket</small> <span id="ticket-text">-</span></p>
+          <div class="buttons">
+            <button id="run">馬を走らせる</button>
+          </div>
+        </div>
+        <div class="horse-track" aria-label="馬が走る演出エリア">
+          <div class="track-line"></div>
+          <div id="horse">🐎</div>
+          <div id="result"></div>
+        </div>
+      </div>
+      <div class="footer-note">今年もよろしゅう。</div>
+    </div>
+  </div>
 
   <script>
     const params = new URLSearchParams(location.search)
@@ -37,12 +286,14 @@
 
     const resultEl = document.getElementById("result")
     const runBtn = document.getElementById("run")
+    const ticketText = document.getElementById("ticket-text")
+
+    ticketText.textContent = ticket || "なし"
 
     if (!ticket) {
       runBtn.disabled = true
-      resultEl.textContent = "ticket がありません"
+      resultEl.textContent = "⚠️ チケットがありません"
     } else {
-      // 事前に設定された結果を取得
       fetch(`/api/result?ticket=${encodeURIComponent(ticket)}`)
         .then(async (r) => {
           const data = await r.json()
@@ -60,7 +311,6 @@
         })
     }
 
-    // 走った後に結果を表示
     document.getElementById("run").onclick = () => {
       if (error) {
         resultEl.textContent = `⚠️ ${error}`
@@ -77,11 +327,12 @@
         }
 
         if (result.type === "win") {
+          const title = result.winTitle ? `<div><b>${result.winTitle}</b></div>` : ""
           const link = result.prizeUrl
             ? `<div><a href="${result.prizeUrl}" target="_blank" rel="noreferrer">賞品ページへ</a></div>`
             : ""
           const comment = result.comment ? `<div>💬 ${result.comment}</div>` : ""
-          resultEl.innerHTML = `🎉 <b>当たり！</b><br>${result.prize}${link}${comment}`
+          resultEl.innerHTML = `🎉 <b>当たり！</b><br>${title}${result.prize}${link}${comment}`
         } else {
           const comment = result.comment ? `<div>💬 ${result.comment}</div>` : ""
           resultEl.innerHTML = `🌸 ${result.message}${comment}`
