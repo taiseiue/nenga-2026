@@ -285,6 +285,7 @@
       font-size: 1.2rem;
       line-height: 1.8;
       min-height: 80px;
+      display: none;
     }
     #result a {
       color: var(--crimson);
@@ -301,6 +302,55 @@
       header h1 { font-size: 2rem; }
       .kadomatsu { display: none; }
       .run { transform: translateX(240px); }
+    }
+    /* dialog */
+    .dialog {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      padding: 20px;
+      z-index: 20;
+    }
+    .dialog.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .dialog-card {
+      background: #fffdf8;
+      border: 3px solid var(--gold);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      max-width: 520px;
+      width: 100%;
+      padding: 18px 18px 14px;
+    }
+    .dialog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      color: var(--crimson);
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .dialog-body {
+      color: var(--ink);
+      line-height: 1.7;
+    }
+    .dialog-close {
+      background: none;
+      border: 1px solid var(--gold);
+      border-radius: 10px;
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--ink);
     }
   </style>
 </head>
@@ -364,10 +414,19 @@
           <div class="horse-wrapper" id="horse-wrapper">
             <div id="horse" aria-label="走る馬">🐎</div>
           </div>
-          <div id="result"></div>
         </div>
       </div>
       <div class="footer-note">今年もよろしゅう。</div>
+    </div>
+  </div>
+
+  <div class="dialog" id="dialog" role="dialog" aria-modal="true">
+    <div class="dialog-card">
+      <div class="dialog-header">
+        <span id="dialog-title">結果</span>
+        <button class="dialog-close" id="dialog-close" aria-label="閉じる">とじる</button>
+      </div>
+      <div class="dialog-body" id="dialog-body"></div>
     </div>
   </div>
 
@@ -378,16 +437,32 @@
     let result
     let error
 
-    const resultEl = document.getElementById("result")
     const runBtn = document.getElementById("run")
     const ticketText = document.getElementById("ticket-text")
     const horseWrapper = document.getElementById("horse-wrapper")
+    const dialog = document.getElementById("dialog")
+    const dialogBody = document.getElementById("dialog-body")
+    const dialogTitle = document.getElementById("dialog-title")
+    const dialogClose = document.getElementById("dialog-close")
+
+    function openDialog(title, html) {
+      dialogTitle.textContent = title
+      dialogBody.innerHTML = html
+      dialog.classList.add("open")
+    }
+    function closeDialog() {
+      dialog.classList.remove("open")
+    }
+    dialogClose.onclick = closeDialog
+    dialog.onclick = (e) => {
+      if (e.target === dialog) closeDialog()
+    }
 
     ticketText.textContent = ticket || "なし"
 
     if (!ticket) {
       runBtn.disabled = true
-      resultEl.textContent = "⚠️ チケットがありません"
+      openDialog("エラー", "⚠️ ticket がありません")
     } else {
       fetch(`/api/result?ticket=${encodeURIComponent(ticket)}`)
         .then(async (r) => {
@@ -402,13 +477,13 @@
         })
         .catch(err => {
           error = err.message
-          resultEl.textContent = `⚠️ ${error}`
+          openDialog("エラー", `⚠️ ${error}`)
         })
     }
 
     document.getElementById("run").onclick = () => {
       if (error) {
-        resultEl.textContent = `⚠️ ${error}`
+        openDialog("エラー", `⚠️ ${error}`)
         return
       }
 
@@ -416,7 +491,7 @@
 
       setTimeout(() => {
         if (!result) {
-          resultEl.textContent = "結果を読み込み中..."
+          openDialog("お知らせ", "結果を読み込み中...")
           return
         }
 
@@ -426,10 +501,10 @@
             ? `<div><a href="${result.prizeUrl}" target="_blank" rel="noreferrer">賞品ページへ</a></div>`
             : ""
           const comment = result.comment ? `<div>💬 ${result.comment}</div>` : ""
-          resultEl.innerHTML = `🎉 <b>当たり！</b><br>${title}${result.prize}${link}${comment}`
+          openDialog("当たり！", `🎉 ${title}${result.prize}${link}${comment}`)
         } else {
           const comment = result.comment ? `<div>💬 ${result.comment}</div>` : ""
-          resultEl.innerHTML = `🌸 ${result.message}${comment}`
+          openDialog("結果", `🌸 ${result.message}${comment}`)
         }
       }, 3000)
     }
