@@ -1,32 +1,59 @@
-<!doctype html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Hello, World!</title>
-	</head>
-	<body>
-		<h1 id="heading"></h1>
-		<p>This page comes from a static asset stored at `public/index.html` as configured in `wrangler.jsonc`.</p>
-		<button id="button" type="button">Fetch a random UUID</button>
-		<output id="random" for="button"></output>
-		<script>
-			fetch('/message')
-				.then((resp) => resp.text())
-				.then((text) => {
-					const h1 = document.getElementById('heading');
-					h1.textContent = text;
-				});
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <title>馬年くじびき</title>
+  <style>
+    body {
+      font-family: system-ui;
+      text-align: center;
+      background: #f7f3eb;
+    }
+    #horse {
+      font-size: 80px;
+      transition: transform 3s ease-in;
+    }
+    .run {
+      transform: translateX(300px);
+    }
+  </style>
+</head>
+<body>
+  <h1>🐎 馬年くじびき</h1>
 
-			const button = document.getElementById("button");
-			button.addEventListener("click", () => {
-				fetch('/random')
-					.then((resp) => resp.text())
-					.then((text) => {
-						const random = document.getElementById('random');
-						random.textContent = text;
-					});
-			});
-		</script>
-	</body>
+  <div id="horse">🐎</div>
+
+  <button id="run">馬を走らせる</button>
+
+  <div id="result"></div>
+
+  <script>
+    const params = new URLSearchParams(location.search)
+    const ticket = params.get("ticket")
+
+    let result
+
+    // 結果は先に取得
+    fetch(`/api/result?ticket=${ticket}`)
+      .then(r => r.json())
+      .then(data => {
+        result = data.result
+      })
+
+    document.getElementById("run").onclick = () => {
+      const horse = document.getElementById("horse")
+      horse.classList.add("run")
+
+      setTimeout(() => {
+        const el = document.getElementById("result")
+        if (result.type === "win") {
+          el.innerHTML = `🎉 <b>当たり！</b><br>${result.prize}`
+        } else {
+          el.innerHTML = `🌸 ${result.message}`
+        }
+      }, 3000)
+    }
+  </script>
+</body>
 </html>
