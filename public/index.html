@@ -495,17 +495,12 @@
           return
         }
 
-        if (result.type === "win") {
-          const title = result.winTitle ? `<div><b>${result.winTitle}</b></div>` : ""
-          const link = result.prizeUrl
-            ? `<div><a href="${result.prizeUrl}" target="_blank" rel="noreferrer">賞品ページへ</a></div>`
-            : ""
-          const comment = result.comment ? `<div>💬 ${result.comment}</div>` : ""
-          openDialog("当たり！", `🎉 ${title}${result.prize}${link}${comment}`)
-        } else {
-          const comment = result.comment ? `<div>💬 ${result.comment}</div>` : ""
-          openDialog("結果", `🌸 ${result.message}${comment}`)
-        }
+        const title = result.winTitle ? `<div><b>${result.winTitle}</b></div>` : ""
+        const link = result.prizeUrl
+          ? `<div><a href="${result.prizeUrl}" target="_blank" rel="noreferrer">賞品ページへ</a></div>`
+          : ""
+        const comment = result.comment ? `<div>💬 ${result.comment}</div>` : ""
+        openDialog("当たり！", `🎉 ${title}${result.prize}${link}${comment}`)
       }, 3000)
     }
   </script>
