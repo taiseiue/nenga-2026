@@ -10,6 +10,12 @@
 	"compatibility_flags": [
 		"global_fetch_strictly_public"
 	],
+	"kv_namespaces": [
+		{
+			"binding": "TICKET_RESULTS",
+			"id": "83a9310c104c4af389332579b9d4ce79"
+		}
+	],
 	"assets": {
 		// The path to the directory containing the `index.html` file to be served at `/`
 		"directory": "./public"

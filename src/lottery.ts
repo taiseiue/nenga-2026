@@ -1,6 +1,15 @@
 export type LotteryResult =
-  | { type: "win"; prize: string }
-  | { type: "lose"; message: string }
+  | {
+      type: "win"
+      prize: string
+      prizeUrl?: string
+      comment?: string
+    }
+  | {
+      type: "lose"
+      message: string
+      comment?: string
+    }
 
 export function draw(ticket: string): LotteryResult {
   // ticketをseedにする（再訪しても同じ結果）

@@ -33,24 +33,58 @@
     const ticket = params.get("ticket")
 
     let result
+    let error
 
-    // 結果は先に取得
-    fetch(`/api/result?ticket=${ticket}`)
-      .then(r => r.json())
-      .then(data => {
-        result = data.result
-      })
+    const resultEl = document.getElementById("result")
+    const runBtn = document.getElementById("run")
 
+    if (!ticket) {
+      runBtn.disabled = true
+      resultEl.textContent = "ticket がありません"
+    } else {
+      // 事前に設定された結果を取得
+      fetch(`/api/result?ticket=${encodeURIComponent(ticket)}`)
+        .then(async (r) => {
+          const data = await r.json()
+          if (!r.ok) {
+            throw new Error(data.error || "結果が見つかりません")
+          }
+          return data
+        })
+        .then(data => {
+          result = data.result
+        })
+        .catch(err => {
+          error = err.message
+          resultEl.textContent = `⚠️ ${error}`
+        })
+    }
+
+    // 走った後に結果を表示
     document.getElementById("run").onclick = () => {
+      if (error) {
+        resultEl.textContent = `⚠️ ${error}`
+        return
+      }
+
       const horse = document.getElementById("horse")
       horse.classList.add("run")
 
       setTimeout(() => {
-        const el = document.getElementById("result")
+        if (!result) {
+          resultEl.textContent = "結果を読み込み中..."
+          return
+        }
+
         if (result.type === "win") {
-          el.innerHTML = `🎉 <b>当たり！</b><br>${result.prize}`
+          const link = result.prizeUrl
+            ? `<div><a href="${result.prizeUrl}" target="_blank" rel="noreferrer">賞品ページへ</a></div>`
+            : ""
+          const comment = result.comment ? `<div>💬 ${result.comment}</div>` : ""
+          resultEl.innerHTML = `🎉 <b>当たり！</b><br>${result.prize}${link}${comment}`
         } else {
-          el.innerHTML = `🌸 ${result.message}`
+          const comment = result.comment ? `<div>💬 ${result.comment}</div>` : ""
+          resultEl.innerHTML = `🌸 ${result.message}${comment}`
         }
       }, 3000)
     }

@@ -1,15 +1,30 @@
 import { Hono } from "hono"
-import { draw } from "./lottery"
+import type { LotteryResult } from "./lottery"
 
-const app = new Hono()
+type Bindings = {
+  TICKET_RESULTS: KVNamespace
+}
 
-app.get("/api/result", (c) => {
+const app = new Hono<{ Bindings: Bindings }>()
+
+app.get("/api/result", async (c) => {
   const ticket = c.req.query("ticket")
   if (!ticket) {
     return c.json({ error: "ticket required" }, 400)
   }
 
-  const result = draw(ticket)
+  const stored = await c.env.TICKET_RESULTS.get(`ticket:${ticket}`)
+  if (!stored) {
+    return c.json({ error: "ticket not found" }, 404)
+  }
+
+  let result: LotteryResult
+  try {
+    result = JSON.parse(stored) as LotteryResult
+  } catch (err) {
+    console.error("Failed to parse stored result", err)
+    return c.json({ error: "invalid result data" }, 500)
+  }
 
   return c.json({
     result,
