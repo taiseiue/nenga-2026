@@ -328,7 +328,9 @@
       box-shadow: var(--shadow);
       max-width: 520px;
       width: 100%;
-      padding: 18px 18px 14px;
+      padding: 18px 18px 18px;
+      position: relative;
+      overflow: hidden;
     }
     .dialog-header {
       display: flex;
@@ -351,6 +353,42 @@
       padding: 6px 10px;
       cursor: pointer;
       color: var(--ink);
+    }
+    .dialog-card.win {
+      background: linear-gradient(135deg, #fff7ea 0%, #fff3d3 50%, #ffe6aa 100%);
+      border: 3px solid #f0b83d;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+    }
+    .win-ribbon {
+      position: absolute;
+      top: -18px;
+      left: -32px;
+      background: linear-gradient(135deg, #e91e63, #ff7043);
+      color: #fff;
+      padding: 12px 44px;
+      transform: rotate(-8deg);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.25);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.18);
+    }
+    .dialog-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid #f0b83d;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-weight: 700;
+      color: var(--crimson);
+      margin-bottom: 8px;
+    }
+    .confetti-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 19;
     }
   </style>
 </head>
@@ -420,8 +458,10 @@
     </div>
   </div>
 
+  <canvas class="confetti-canvas" id="confetti"></canvas>
   <div class="dialog" id="dialog" role="dialog" aria-modal="true">
-    <div class="dialog-card">
+    <div class="dialog-card" id="dialog-card">
+      <div class="win-ribbon" id="dialog-ribbon" hidden>当たり！</div>
       <div class="dialog-header">
         <span id="dialog-title">結果</span>
         <button class="dialog-close" id="dialog-close" aria-label="閉じる">とじる</button>
@@ -441,21 +481,80 @@
     const ticketText = document.getElementById("ticket-text")
     const horseWrapper = document.getElementById("horse-wrapper")
     const dialog = document.getElementById("dialog")
+    const dialogCard = document.getElementById("dialog-card")
     const dialogBody = document.getElementById("dialog-body")
     const dialogTitle = document.getElementById("dialog-title")
     const dialogClose = document.getElementById("dialog-close")
+    const dialogRibbon = document.getElementById("dialog-ribbon")
+    const confettiCanvas = document.getElementById("confetti")
+    const ctx = confettiCanvas.getContext("2d")
 
-    function openDialog(title, html) {
+    function resizeCanvas() {
+      confettiCanvas.width = innerWidth
+      confettiCanvas.height = innerHeight
+    }
+    resizeCanvas()
+    addEventListener("resize", resizeCanvas)
+
+    function openDialog(title, html, { isWin = false } = {}) {
       dialogTitle.textContent = title
       dialogBody.innerHTML = html
       dialog.classList.add("open")
+      if (isWin) {
+        dialogCard.classList.add("win")
+        dialogRibbon.hidden = false
+        fireConfetti()
+      } else {
+        dialogCard.classList.remove("win")
+        dialogRibbon.hidden = true
+      }
     }
     function closeDialog() {
       dialog.classList.remove("open")
+      dialogCard.classList.remove("win")
+      dialogRibbon.hidden = true
     }
     dialogClose.onclick = closeDialog
     dialog.onclick = (e) => {
       if (e.target === dialog) closeDialog()
+    }
+
+    function fireConfetti() {
+      const particles = Array.from({ length: 180 }).map(() => ({
+        x: Math.random() * innerWidth,
+        y: -20,
+        size: 6 + Math.random() * 6,
+        color: `hsl(${Math.random() * 360}, 80%, 60%)`,
+        velocityX: (Math.random() - 0.5) * 5,
+        velocityY: 4 + Math.random() * 6,
+        rotation: Math.random() * 360,
+        rotationSpeed: (Math.random() - 0.5) * 12,
+      }))
+
+      let frame = 0
+      function tick() {
+        frame++
+        ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height)
+        particles.forEach((p) => {
+          p.x += p.velocityX
+          p.y += p.velocityY
+          p.rotation += p.rotationSpeed
+          p.velocityY += 0.05
+
+          ctx.save()
+          ctx.translate(p.x, p.y)
+          ctx.rotate((p.rotation * Math.PI) / 180)
+          ctx.fillStyle = p.color
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.7)
+          ctx.restore()
+        })
+        if (frame < 180) {
+          requestAnimationFrame(tick)
+        } else {
+          ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height)
+        }
+      }
+      tick()
     }
 
     ticketText.textContent = ticket || "なし"
@@ -500,7 +599,8 @@
           ? `<div><a href="${result.prizeUrl}" target="_blank" rel="noreferrer">賞品ページへ</a></div>`
           : ""
         const comment = result.comment ? `<div>💬 ${result.comment}</div>` : ""
-        openDialog("当たり！", `🎉 ${title}${result.prize}${link}${comment}`)
+        const badge = `<div class="dialog-badge">🎊 あたり</div>`
+        openDialog("当たり！", `${badge}${title}${result.prize}${link}${comment}`, { isWin: true })
       }, 3000)
     }
   </script>
