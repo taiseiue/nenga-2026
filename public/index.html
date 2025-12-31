@@ -437,7 +437,6 @@
         <div class="hero-text">
           <h2>願いを乗せて、駆け出す。</h2>
           <p>門松と紅白の彩りでお迎えする午年のおみくじ。あらかじめ授かった「年賀状」で、あなただけの結果を解封します。</p>
-          <p class="ticket">🎟 <small>B0552組</small> <span id="ticket-text">-</span></p>
           <div class="buttons">
             <button id="run">馬を走らせる</button>
           </div>
@@ -478,7 +477,6 @@
     let error
 
     const runBtn = document.getElementById("run")
-    const ticketText = document.getElementById("ticket-text")
     const horseWrapper = document.getElementById("horse-wrapper")
     const dialog = document.getElementById("dialog")
     const dialogCard = document.getElementById("dialog-card")
@@ -556,8 +554,6 @@
       }
       tick()
     }
-
-    ticketText.textContent = ticket || "なし"
 
     if (!ticket) {
       runBtn.disabled = true
